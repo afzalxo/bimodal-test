@@ -64,37 +64,38 @@ def evaluate_test_set(model, generator, cfg, mode='test', tensorboard=None, verb
             mean_loss_error_rel = np.nanmean(best_mean_loss_errors_rel)
 
 
-    if tensorboard is not None and tensorboard.writer is not None:
-        import tensorflow as tf
-        summary = tf.Summary()
-        summary_map = summary.value.add()
-        summary_map.simple_value = mean_ap
-        summary_map.tag = "mAP_test_" + mode
-        summary_precision = summary.value.add()
-        summary_precision.simple_value = mean_precision
-        summary_precision.tag = 'precision_test_' + mode
-        summary_recall = summary.value.add()
-        summary_recall.simple_value = mean_recall
-        summary_recall.tag = 'recall_test_' + mode
-        if cfg.distance_detection:
-            summary_dist = summary.value.add()
-            summary_dist.simple_value = mean_loss_error
-            summary_dist.tag = 'mADE_test_' + mode
-            summary_dist_rel = summary.value.add()
-            summary_dist_rel.simple_value = mean_loss_error_rel
-            summary_dist_rel.tag = 'mRDE_test_' + mode
+    if tensorboard is not None and cfg.tensorboard is not False: 
+        if tensorboard.writer is not None:
+            import tensorflow as tf
+            summary = tf.Summary()
+            summary_map = summary.value.add()
+            summary_map.simple_value = mean_ap
+            summary_map.tag = "mAP_test_" + mode
+            summary_precision = summary.value.add()
+            summary_precision.simple_value = mean_precision
+            summary_precision.tag = 'precision_test_' + mode
+            summary_recall = summary.value.add()
+            summary_recall.simple_value = mean_recall
+            summary_recall.tag = 'recall_test_' + mode
+            if cfg.distance_detection:
+                summary_dist = summary.value.add()
+                summary_dist.simple_value = mean_loss_error
+                summary_dist.tag = 'mADE_test_' + mode
+                summary_dist_rel = summary.value.add()
+                summary_dist_rel.simple_value = mean_loss_error_rel
+                summary_dist_rel.tag = 'mRDE_test_' + mode
 
-        ### class average precisions to tensorboard
-        summary_aps = []
-        for label, (average_precision, num_annotations ) in best_aps.items():
-            if generator.label_to_name(label) is not 'bg':
-                summary_aps.append(summary.value.add())
-                summary_aps[label].simple_value = average_precision
-                summary_aps[label].tag = 'ap_test_' + mode + '_' + generator.label_to_name(label) + ' (' + str(int(num_annotations)) + ' instances)'
+            ### class average precisions to tensorboard
+            summary_aps = []
+            for label, (average_precision, num_annotations ) in best_aps.items():
+                if generator.label_to_name(label) is not 'bg':
+                    summary_aps.append(summary.value.add())
+                    summary_aps[label].simple_value = average_precision
+                    summary_aps[label].tag = 'ap_test_' + mode + '_' + generator.label_to_name(label) + ' (' + str(int(num_annotations)) + ' instances)'
 
-        tensorboard.writer.reopen()
-        tensorboard.writer.add_summary(summary, 0)
-        tensorboard.writer.close()
+            tensorboard.writer.reopen()
+            tensorboard.writer.add_summary(summary, 0)
+            tensorboard.writer.close()
 
 
     if verbose == 1:

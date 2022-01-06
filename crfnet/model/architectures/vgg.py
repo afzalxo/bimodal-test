@@ -16,6 +16,8 @@ limitations under the License.
 
 #todo: @Max purpose of vgg and vgg_max scripts? Unify scripts?
 import keras
+#from tensorflow import keras
+#from tensorflow.keras.utils import get_file
 from keras.utils import get_file
 
 from . import retinanet
@@ -23,10 +25,15 @@ from . import Backbone
 from . import vggmax
 from .vggmax import min_pool2d
 from ...utils.image import preprocess_image
+#from .pertnas_keras import PertNAS
+from . import pertnas_keras
 
 class VGGBackbone(Backbone):
     """ Describes backbone information and provides utility functions.
     """
+
+    #def retinanet(self, *args, **kwargs):
+    #    return pertnas_retinanet(*args, backbone=self.backbone, **kwargs)
 
     def retinanet(self, *args, **kwargs):
         """ Returns a retinanet model using the correct backbone.
@@ -48,7 +55,6 @@ class VGGBackbone(Backbone):
             checksum = '253f8cb515780f3b799900260a226db6'
         else:
             raise ValueError("Backbone '{}' not recognized.".format(self.backbone))
-
         return get_file(
             '{}_weights_tf_dim_ordering_tf_kernels_notop.h5'.format(self.backbone),
             resource,
@@ -69,6 +75,12 @@ class VGGBackbone(Backbone):
         """
         return preprocess_image(inputs, mode='caffe')
 
+'''
+def pertnas_retinanet(num_classes, backbone='PertNAS', inputs=None, modifier=None, distance=False, cfg=None, **kwargs):
+    model = PertNAS(cfg=cfg)
+    layer_outputs, radar_outputs = model.layer_outputs, model.radar_outputs
+    return retinanet.retinanet(inputs=inputs, num_classes=num_classes, backbone_layers=layer_outputs, radar_layers=radar_outputs, distance=distance, **kwargs)
+'''
 
 def vgg_retinanet(num_classes, backbone='vgg16', inputs=None, modifier=None, distance=False, cfg=None, **kwargs):
     """ Constructs a retinanet model using a vgg backbone.
@@ -94,10 +106,10 @@ def vgg_retinanet(num_classes, backbone='vgg16', inputs=None, modifier=None, dis
     elif backbone == 'vgg19':
         vgg = keras.applications.VGG19(input_tensor=inputs, include_top=False, weights=None)
     elif 'vgg-max' in backbone:
-        vgg = vggmax.custom(input_tensor=inputs, include_top=False, weights=None, cfg=cfg)
+        #vgg = vggmax.custom(input_tensor=inputs, include_top=False, weights=None, cfg=cfg)
+        vgg = pertnas_keras.custom(input_tensor=inputs, include_top=False, weights=None, cfg=cfg)
     else:
         raise ValueError("Backbone '{}' not recognized.".format(backbone))
-
     if modifier:
         vgg = modifier(vgg)
 
@@ -112,6 +124,9 @@ def vgg_retinanet(num_classes, backbone='vgg16', inputs=None, modifier=None, dis
                 layer_names.append("block%i_pool"%i)
     else:
         layer_names = ["block3_pool", "block4_pool", "block5_pool"]
+    print('--=='*20)
+    print(layer_names)
+    print('--=='*20)
 
     layer_outputs = [vgg.get_layer(name).output for name in layer_names]
 
@@ -142,5 +157,4 @@ def vgg_retinanet(num_classes, backbone='vgg16', inputs=None, modifier=None, dis
         radar_outputs = None
         # TODO: catch the specific exception. Exception is too broad.
         raise e
-
     return retinanet.retinanet(inputs=inputs, num_classes=num_classes, backbone_layers=layer_outputs, radar_layers=radar_outputs, distance=distance, **kwargs)

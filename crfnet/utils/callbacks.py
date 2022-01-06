@@ -158,7 +158,7 @@ class Evaluate(keras.callbacks.Callback):
                 self.mean_loss_error_rel = np.nanmean(best_mean_loss_errors_rel)
 
 
-        if self.tensorboard is not None and self.tensorboard.writer is not None:
+        if self.tensorboard is not None and cfg.tensorboard is not False and self.tensorboard.writer is not None:
             import tensorflow as tf
             summary = tf.Summary()
             summary_map = summary.value.add()

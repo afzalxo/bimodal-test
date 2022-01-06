@@ -13,6 +13,7 @@ from keras.backend import concatenate, shape
 from keras.layers import Lambda, Concatenate
 import keras.backend as K
 import keras
+#from tensorflow import keras
 
 @keras_modules_injection
 def custom(*args, **kwargs):
@@ -143,6 +144,7 @@ def vggmax(include_top=True,
         else:
             all_input = input_tensor
     
+    print(all_input.shape)
     ## Read config variables
     fusion_blocks = cfg.fusion_blocks
 

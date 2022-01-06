@@ -20,7 +20,9 @@ import traceback
 
 # Third party imports
 import keras
-import keras.preprocessing.image
+#from tensorflow import keras
+#import tensorflow.keras.preprocessing.image
+from keras import preprocessing
 import tensorflow as tf
 
 # Allow relative imports when being executed as script.
@@ -54,6 +56,8 @@ def model_with_weights(model, weights, skip_mismatch, config=None, num_classes=N
     """
 
     if weights is not None:
+        print('--=='*20)
+        print(model, weights)
         model.load_weights(weights, by_name=True, skip_mismatch=skip_mismatch)
         if len(config.channels) > 3:
             config.channels = [0,1,2]
@@ -290,6 +294,7 @@ def main():
     os.environ['CUDA_VISIBLE_DEVICES'] = cfg.gpu
 
     keras.backend.tensorflow_backend.set_session(get_session(cfg.gpu_mem_usage))
+    #tf.compat.v1.keras.backend.get_session()
 
     # create the generators
     if 'nuscenes' in cfg.data_set:
@@ -328,7 +333,9 @@ def main():
 
     # print model summary
     print(model.summary())
+    exit(0)
     print("Model Parameters: ", model.count_params())
+    print('here1--'*10)
     
 
     # this lets the generator compute backbone layer shapes using the actual backbone model
@@ -336,6 +343,7 @@ def main():
         train_generator.compute_shapes = make_shapes_callback(model)
         if validation_generator:
             validation_generator.compute_shapes = train_generator.compute_shapes
+    print('here2--'*10)
 
     # create the callbacks
     callbacks = create_callbacks(
@@ -345,6 +353,7 @@ def main():
         cfg,
     )
 
+    print('here3--'*10)
     # Use multiprocessing if cpu_count > 0
     use_multiprocessing = cfg.workers > 0
     
@@ -355,6 +364,7 @@ def main():
 
         for key in class_weights_names.keys():
             class_weights_labels[train_generator.name_to_label(key)] = float(class_weights_names[key])
+    print('here4--'*10)
     
     # Print outputs
     print()
@@ -371,6 +381,8 @@ def main():
     print("="*60)
 
 
+    print(len(train_generator))
+    print(len(validation_generator))
     ## Start training
     training_model.fit_generator(
         generator=train_generator,

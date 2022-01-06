@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import keras
+#from tensorflow import keras
 from crfnet.model import initializers
 from .. import layers
 from crfnet.utils.anchor_parameters import AnchorParameters

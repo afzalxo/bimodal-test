@@ -28,7 +28,9 @@ def keras_version():
     Returns
         tuple of (major, minor, patch).
     """
-    return tuple(map(int, keras.__version__.split('.')))
+    spl = keras.__version__.split('.')
+    spl[-1] = spl[-1].split('-')[0]
+    return tuple(map(int, spl))
 
 
 def keras_version_ok():
